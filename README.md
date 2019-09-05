@@ -22,8 +22,11 @@ class TestClass {
 	@Type()
 	str: string;
 
-	@ArrayType(OtherClass)
+	@Prop([OtherClass])
 	arr: OtherClass[];
+	
+	@Prop([[String]])
+	arr2D: string[][];
 }
 
 const schema = createSchema(TestClass);
@@ -34,6 +37,15 @@ results.schema =>
     {
         type: 'object',
         properties: {
+            arr2D: {
+                type: 'array',
+                items: {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                }
+            },
             arr: {
                 type: 'array',
                 items: {
@@ -72,7 +84,6 @@ results.schema =>
 @Example
 @Examples
 @Type
-@ArrayType
 @UniqueItems
 @Description
 ```

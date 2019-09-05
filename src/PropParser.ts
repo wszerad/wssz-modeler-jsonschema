@@ -1,9 +1,8 @@
-import { Default, Type, Enum, Pattern, ArrayType } from '@wssz/modeler/src/decorators';
-import { hasMarkers } from '@wssz/modeler/src/utils';
+import { Default, Prop, Enum, Pattern, MaxItems, MinItems, UniqueItems } from '@wssz/modeler/src/decorators';
+import { hasMarkers, extractDecoratorMarkers } from '@wssz/modeler/src/utils';
 
 export class PropParser {
 	private dependencies = new Set();
-	private definition = {};
 
 	constructor(
 		private modelClass: any,
@@ -15,82 +14,122 @@ export class PropParser {
 		return Array.from(this.dependencies.values());
 	}
 
-	getDefinition() {
-		return this.definition;
-	}
-
 	extractor(jsonKey: string, decorator: Function, value?: any) {
 		const marker = this.extractKeyMarkers(decorator, value);
 		if (marker === undefined) {
-			return this;
+			return {};
 		}
 
-		this.definition[jsonKey] = marker;
-		return this;
+		return {[jsonKey]: marker};
+	}
+
+	extractorWithLevels(jsonKey: string, decorator: Function, level: number, value?: any) {
+		const marker = this.getNestedDecorator(decorator, level, value);
+		if (marker === undefined) {
+			return {};
+		}
+
+		return {[jsonKey]: marker};
 	}
 
 	patternExtractor() {
 		const marker = this.extractKeyMarkers(Pattern);
 		if (!marker) {
-			return this;
+			return {};
 		}
 
-		this.definition['pattern'] = marker.toString();
-		return this;
+		return {pattern: marker.toString()};
 	}
 
 	defaultExtractor() {
 		const marker = this.extractKeyMarkers(Default);
 		if (marker === undefined) {
-			return this;
+			return {};
 		}
 
-		this.definition['default'] = (marker instanceof Function) ? marker() : marker;
-		return this;
+		return {default: (marker instanceof Function) ? marker() : marker};
 	}
 
 	enumExtractor() {
 		const marker = this.extractKeyMarkers(Enum);
 		if (!marker) {
-			return this;
+			return {};
 		}
 
-		this.definition['enum'] = Array.isArray(marker) ? marker : Object.values(marker);
-		return this;
+		return {enum: Array.isArray(marker) ? marker : Object.values(marker)};
 	}
 
 	typeExtractor() {
-		const marker = this.extractKeyMarkers(Type);
-		if (marker === undefined) {
-			return this;
+		const marker = this.extractKeyMarkers(Prop);
+		if (marker === undefined || marker === Array || Array.isArray(marker)) {
+			return {};
 		}
 
 		if (marker === Array) {
 			throw new TypeError(`For Array in ${this.modelClass.constructor.name}.${this.key} use @ArrayType instead of @Type`);
 		}
 
-		Object.assign(this.definition, this.typeMatch(marker));
-		return this;
+		return this.typeMatch(marker);
 	}
 
 	arrayTypeExtractor() {
-		const marker = this.extractKeyMarkers(ArrayType);
-		if (marker === undefined) {
-			return this;
+		const marker = this.extractKeyMarkers(Prop);
+
+		if (marker !== Array && !Array.isArray(marker)) {
+			return {};
 		}
 
-		Object.assign(this.definition, {
-			type: 'array',
-			items: this.typeMatch(marker)
-		});
-		return this;
+		const nestedArrayInfo = this.getArrayDepthAndType(marker);
+		const arraySchema: any = {};
+		let prev = arraySchema;
+
+		for (let i = 0; i < nestedArrayInfo.depth; i++) {
+			Object.assign(
+				prev,
+				{
+					type: 'array',
+					items: {}
+				},
+				this.extractorWithLevels('maxItems', MaxItems, i),
+				this.extractorWithLevels('minItems', MinItems, i),
+				this.extractorWithLevels('uniqueItems', UniqueItems, i, true)
+			);
+			prev = prev.items;
+		}
+
+		Object.assign(prev, this.typeMatch(nestedArrayInfo.type));
+		return [arraySchema, prev];
+	}
+
+	private getNestedDecorator(decorator: Function, level: number, value?: any) {
+		const marker = this.extractKeyMarkers(decorator, value);
+
+		if (Array.isArray(marker)) {
+			return marker[level];
+		} else if(level === 0) {
+			return marker;
+		} else {
+			return undefined;
+		}
+	}
+
+	private getArrayDepthAndType(type: any, depth: number = 0) {
+		if (type === Array) {
+			return {
+				depth: 1,
+				type: undefined
+			};
+		} else if (Array.isArray(type)) {
+			return this.getArrayDepthAndType(type[0], ++depth);
+		}
+		return {
+			depth,
+			type
+		};
 	}
 
 	private extractKeyMarkers(decorator: Function, value?: any) {
-		if (!this.keyMarkers.has(decorator)) {
-			return;
-		}
-		return value !== undefined ? value : this.keyMarkers.get(decorator);
+		return extractDecoratorMarkers(this.keyMarkers, decorator, value);
 	}
 
 	private typeMatch(type: any) {

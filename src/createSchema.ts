@@ -7,14 +7,11 @@ import {
 	Format,
 	getMarkers,
 	Maximum,
-	MaxItems,
 	MaxLength,
 	Minimum,
-	MinItems,
 	MinLength,
-	MultipleOf,
-	Required,
-	UniqueItems
+	MultipleOf, Prop,
+	Required
 } from '@wssz/modeler';
 import { PropParser } from './PropParser';
 
@@ -31,31 +28,52 @@ export function createSchema(model): ModelerJSONSchemaResults {
 	};
 
 	getMarkers(model).forEach((markers, key) => {
-		const propResults =	new PropParser(model, markers, key as string)
-			.typeExtractor()
-			.arrayTypeExtractor()
-			.enumExtractor()
-			.patternExtractor()
-			.defaultExtractor()
-			.extractor('example', Example)
-			.extractor('examples', Examples)
-			.extractor('required', Required, true)
-			.extractor('minimum', Minimum)
-			.extractor('maximum', Maximum)
-			.extractor('exclusiveMinimum', ExclusiveMinimum)
-			.extractor('exclusiveMaximum', ExclusiveMaximum)
-			.extractor('multipleOf', MultipleOf)
-			.extractor('maxLength', MaxLength)
-			.extractor('minLength', MinLength)
-			.extractor('format', Format)
-			.extractor('maxItems', MaxItems)
-			.extractor('minItems', MinItems)
-			.extractor('description', Description)
-			.extractor('uniqueItems', UniqueItems, true);
+		const definition = {};
+		const prop = new PropParser(model, markers, key as string);
+		const marker = markers.get(Prop);
+		const isArray = (marker === Array || Array.isArray(marker));
+		let instance;
 
+		if (isArray) {
+			const arrayDef = prop.arrayTypeExtractor();
+			instance = arrayDef[1];
+			Object.assign(
+				definition,
+				arrayDef[0],
+				prop.extractor('description', Description),
+				prop.extractor('example', Example),
+				prop.extractor('examples', Examples),
+				prop.extractor('required', Required, true),
+			);
+		} else {
+			instance = definition;
+			Object.assign(
+				definition,
+				prop.typeExtractor(),
+				prop.extractor('description', Description),
+				prop.extractor('example', Example),
+				prop.extractor('examples', Examples),
+				prop.extractor('required', Required, true)
+			);
+		}
 
-		schema.properties[key] = propResults.getDefinition();
-		propResults.getDependencies().forEach(dependence => dependencies.add(dependence));
+		Object.assign(
+			instance,
+			prop.enumExtractor(),
+			prop.patternExtractor(),
+			prop.defaultExtractor(),
+			prop.extractor('minimum', Minimum),
+			prop.extractor('maximum', Maximum),
+			prop.extractor('exclusiveMinimum', ExclusiveMinimum),
+			prop.extractor('exclusiveMaximum', ExclusiveMaximum),
+			prop.extractor('multipleOf', MultipleOf),
+			prop.extractor('maxLength', MaxLength),
+			prop.extractor('minLength', MinLength),
+			prop.extractor('format', Format)
+		);
+
+		schema.properties[key] = definition;
+		prop.getDependencies().forEach(dependence => dependencies.add(dependence));
 	});
 
 	return {
@@ -63,4 +81,3 @@ export function createSchema(model): ModelerJSONSchemaResults {
 		dependencies: Array.from(dependencies.values())
 	};
 }
-

@@ -16,10 +16,9 @@ import {
 	MultipleOf,
 	Pattern,
 	Required,
-	Type,
 	UniqueItems,
-	ArrayType,
-	Default
+	Default,
+	Prop
 } from '@wssz/modeler';
 import { expect } from 'chai';
 import 'mocha';
@@ -27,7 +26,7 @@ import 'reflect-metadata';
 import { createSchema } from '../src/createSchema';
 
 class OtherClass {
-	@Type()
+	@Prop()
 	name: string;
 }
 
@@ -43,7 +42,7 @@ class TestClass {
 		b: {value: {name: 'b'}},
 	})
 	@Required()
-	@Type()
+	@Prop()
 	ref: OtherClass;
 
 	@Example('test')
@@ -52,7 +51,7 @@ class TestClass {
 	@Format(Formats.Email)
 	@Pattern(/[test|test2]/)
 	@Enum(Enums)
-	@Type()
+	@Prop()
 	str: string;
 
 	@Default(0)
@@ -63,11 +62,19 @@ class TestClass {
 	@MultipleOf(5)
 	num: number;
 
-	@ArrayType(OtherClass)
+	@Prop([OtherClass])
 	@MaxItems(1)
 	@MinItems(0)
 	@UniqueItems()
 	arr: OtherClass[];
+
+	@Prop([[String]])
+	@MaxItems([1, 2])
+	@MinItems([2, 3])
+	@MinLength(3)
+	@UniqueItems()
+	@Description('Base level')
+	arr2D: string[][];
 }
 
 describe('tests', () => {
@@ -78,6 +85,22 @@ describe('tests', () => {
 			expect(results.schema).to.eql({
 				type: 'object',
 				properties: {
+					arr2D: {
+						maxItems: 1,
+						minItems: 2,
+						type: 'array',
+						uniqueItems: true,
+						description: 'Base level',
+						items: {
+							maxItems: 2,
+							minItems: 3,
+							type: 'array',
+							items: {
+								type: 'string',
+								minLength: 3
+							}
+						}
+					},
 					arr: {
 						maxItems: 1,
 						minItems: 0,
