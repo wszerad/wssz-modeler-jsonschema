@@ -5,7 +5,7 @@ Plugin for [@wssz/modeler](https://github.com/wszerad/wssz-modeler), create JSON
 
 ```ts
 import { Description, Enum, Required, Type, ArrayType } from '@wssz/modeler';
-import { createSchema } from '@wssz/modeler-jsonschema';
+import { ModelerJsonSchema } from '@wssz/modeler-jsonschema';
 
 enum Enums {
 	A = 'test',
@@ -29,7 +29,7 @@ class TestClass {
 	arr2D: string[][];
 }
 
-const schema = createSchema(TestClass);
+const schema = ModelerJsonSchema.create(TestClass);
 results.dependencies => 
     [OtherClass]
     

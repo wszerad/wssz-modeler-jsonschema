@@ -15,7 +15,7 @@ import {
 } from '@wssz/modeler';
 import { PropParser } from './PropParser';
 
-interface ModelerJSONSchemaResults {
+export interface ModelerJSONSchemaResults {
 	schema: any;
 	dependencies: any[]
 }
