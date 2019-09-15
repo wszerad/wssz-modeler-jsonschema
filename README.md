@@ -4,7 +4,7 @@ Plugin for [@wssz/modeler](https://github.com/wszerad/wssz-modeler), create JSON
 ## Usage
 
 ```ts
-import { Description, Enum, Required, Type, ArrayType } from '@wssz/modeler';
+import { Description, Enum, Required, Type, Items } from '@wssz/modeler';
 import { ModelerJsonSchema } from '@wssz/modeler-jsonschema';
 
 enum Enums {
@@ -12,20 +12,26 @@ enum Enums {
 	B = 'test2'
 }
 
+class NestedArray extend ArrayItems {
+    @Items()
+    items: string[];
+}
+
 class TestClass {
 	@Description('description')
 	@Required()
-	@Type()
+	@Prop()
 	ref: OtherClass;
 
 	@Enum(Enums)
-	@Type()
+	@Prop()
 	str: string;
 
-	@Prop([OtherClass])
+    @Items(OtherClass)
+	@Prop()
 	arr: OtherClass[];
 	
-	@Prop([[String]])
+    @Items(NestedArray)
 	arr2D: string[][];
 }
 
@@ -67,6 +73,8 @@ results.schema =>
 ### Supported decorators
 * see more at [build-in decorators](https://github.com/wszerad/wssz-modeler#Decorators)
 ```ts
+@Prop
+@Items
 @Required
 @Minimum
 @Maximum
@@ -83,7 +91,6 @@ results.schema =>
 @Default
 @Example
 @Examples
-@Type
 @UniqueItems
 @Description
 ```

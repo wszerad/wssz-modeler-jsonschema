@@ -18,16 +18,24 @@ import {
 	Required,
 	UniqueItems,
 	Default,
-	Prop
+	Prop,
+    Items,
+    ArrayItems
 } from '@wssz/modeler';
 import { expect } from 'chai';
 import 'mocha';
 import 'reflect-metadata';
-import { createSchema } from '../src/createSchema';
+import { ModelerJsonSchema } from '../index';
 
 class OtherClass {
 	@Prop()
 	name: string;
+}
+
+class NestedItems extends ArrayItems {
+	@UniqueItems()
+	@Items(Date)
+	items: Date[];
 }
 
 enum Enums {
@@ -62,42 +70,40 @@ class TestClass {
 	@MultipleOf(5)
 	num: number;
 
-	@Prop([OtherClass])
+	@Items(OtherClass)
 	@MaxItems(1)
 	@MinItems(0)
 	@UniqueItems()
 	arr: OtherClass[];
 
-	@Prop([[String]])
-	@MaxItems([1, 2])
-	@MinItems([2, 3])
-	@MinLength(3)
+	@Items(NestedItems)
+	@MaxItems(2)
+	@MinItems(1)
 	@UniqueItems()
 	@Description('Base level')
-	arr2D: string[][];
+	arr2D: Date[][];
 }
 
 describe('tests', () => {
 	describe('createSchema', () => {
 		it('should convert to similar object', () => {
-			const results = createSchema(TestClass);
-			expect(results.dependencies).to.eql([OtherClass]);
-			expect(results.schema).to.eql({
+			const results = ModelerJsonSchema.create(TestClass);
+			expect(results.getDependencies()).to.eql([OtherClass]);
+			expect(results.getSchema()).to.eql({
 				type: 'object',
 				properties: {
 					arr2D: {
-						maxItems: 1,
-						minItems: 2,
+						maxItems: 2,
+						minItems: 1,
 						type: 'array',
 						uniqueItems: true,
 						description: 'Base level',
 						items: {
-							maxItems: 2,
-							minItems: 3,
+							uniqueItems: true,
 							type: 'array',
 							items: {
 								type: 'string',
-								minLength: 3
+								format: 'date'
 							}
 						}
 					},
