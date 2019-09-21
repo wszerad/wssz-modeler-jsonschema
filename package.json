@@ -2,7 +2,7 @@
 	"name": "@wssz/modeler-jsonschema",
 	"author": "wszerad91@gmail.com",
 	"license": "MIT",
-	"version": "0.2.0",
+	"version": "0.2.3",
 	"main": "index.ts",
 	"devDependencies": {
 		"@types/chai": "^4.2.0",
@@ -17,7 +17,7 @@
 		"reflect-metadata": "^0.1.13",
 		"typescript": "^3.5.3",
 		"babel-polyfill": "^6.26.0",
-		"@wssz/modeler": "0.2.1"
+		"@wssz/modeler": "0.2.2"
 	},
 	"repository": {
 		"type": "git",

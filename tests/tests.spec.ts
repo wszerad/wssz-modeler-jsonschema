@@ -113,7 +113,7 @@ describe('tests', () => {
 						uniqueItems: true,
 						type: 'array',
 						items: {
-							$ref: '#/definitions/OtherClass'
+							$ref: 'OtherClass'
 						}
 					},
 					num: {
@@ -126,7 +126,7 @@ describe('tests', () => {
 					},
 					ref: {
 						description: 'description',
-						$ref: '#/definitions/OtherClass',
+						$ref: 'OtherClass',
 						required: true,
 						examples: {
 							a: {value: {name: 'a'}},

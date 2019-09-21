@@ -1,71 +1,17 @@
-import { Default, Prop, Enum, Pattern, MaxItems, MinItems, UniqueItems, Items, hasMarkers, extractDecoratorMarkers, getMarkers, Example, Required, Description, Examples, ExclusiveMaximum, MultipleOf, ExclusiveMinimum, Minimum, Maximum, MaxLength, MinLength, Format, ArrayItems, NestedItems } from '@wssz/modeler';
-
-export class ModelParser {
-	private dependencies = new Set();
-	private schema = {
-		type: 'object',
-		properties: {}
-	};
-
-	constructor(model: Object) {
-		getMarkers(model).forEach((markers, key) => {
-			const definition = {};
-			const prop = new PropParsers(model, markers, key as string);
-
-			Object.assign(
-				definition,
-				prop.defaultExtractor(),
-				prop.typeExtractor(),
-				prop.arrayTypeExtractor(),
-				prop.extractor('description', Description),
-				prop.extractor('example', Example),
-				prop.extractor('examples', Examples),
-				prop.extractor('required', Required),
-				prop.extractor('maxItems', MaxItems),
-				prop.extractor('minItems', MinItems),
-				prop.extractor('uniqueItems', UniqueItems),
-			);
-
-			const selfProp = Reflect.has(definition, 'items') ? (definition as ArrayItems).items : definition;
-
-			Object.assign(
-				selfProp,
-				prop.enumExtractor(),
-				prop.patternExtractor(),
-				prop.extractor('minimum', Minimum),
-				prop.extractor('maximum', Maximum),
-				prop.extractor('exclusiveMinimum', ExclusiveMinimum),
-				prop.extractor('exclusiveMaximum', ExclusiveMaximum),
-				prop.extractor('multipleOf', MultipleOf),
-				prop.extractor('maxLength', MaxLength),
-				prop.extractor('minLength', MinLength),
-				prop.extractor('format', Format),
-			);
-
-			this.schema.properties[key] = definition;
-			prop.getDependencies().forEach(dependence => this.dependencies.add(dependence));
-		});
-	}
-
-	getSchema() {
-		return this.schema;
-	}
-
-	getDependencies() {
-		return Array.from(this.dependencies);
-	}
-}
+import { Default, Enum, extractDecoratorMarkers, hasMarkers, Items, NestedItems, Pattern, Prop } from '@wssz/modeler';
+import { ModelParser } from './ModelParser';
 
 export class PropParsers {
-	private dependencies = new Set();
+	private dependencies = new Set<Function>();
 
 	constructor(
 		private modelClass: Object,
 		private keyMarkers: Map<Function, any>,
 		private key: string
-	) {}
+	) {
+	}
 
-	getDependencies() {
+	getDependencies(): Function[] {
 		return Array.from(this.dependencies.values());
 	}
 
@@ -159,8 +105,7 @@ export class PropParsers {
 				return {type: 'boolean'};
 			case Date:
 				return {
-					type: 'string',
-					format: 'date'
+					$ref: 'Date'
 				};
 			case Object:
 				return {type: 'object'};
@@ -169,7 +114,7 @@ export class PropParsers {
 				if (dependencies) {
 					this.dependencies.add(type);
 					return {
-						$ref: `#/definitions/${type.name}`
+						$ref: type.name
 					};
 				}
 				return {type: 'null'};
