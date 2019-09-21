@@ -20,17 +20,18 @@ import {
 } from '@wssz/modeler';
 import { PostParser } from './PostParser';
 import { PropParsers } from './PropParser';
+import { JSONProp, JSONSchema } from './schema';
 
 export class ModelParser {
 	private dependencies = new Set<Function>();
-	private schema: {type: string, properties: {[key: string]: object}} = {
+	private schema: JSONSchema = {
 		type: 'object',
 		properties: {}
 	};
 
 	constructor(model: Object) {
 		getMarkers(model).forEach((markers, key) => {
-			const definition = {};
+			const definition: JSONProp = {};
 			const prop = new PropParsers(model, markers, key as string);
 
 			Object.assign(
@@ -48,7 +49,7 @@ export class ModelParser {
 				prop.extractor('nullable', Nullable),
 			);
 
-			const selfProp = Reflect.has(definition, 'items') ? (definition as ArrayItems).items : definition;
+			const selfProp = Reflect.has(definition, 'items') ? definition.items : definition;
 
 			Object.assign(
 				selfProp,

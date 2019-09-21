@@ -114,7 +114,7 @@ export class PropParsers {
 				if (dependencies) {
 					this.dependencies.add(type);
 					return {
-						$ref: type.name
+						$ref: `#/definitions/${type.name}`
 					};
 				}
 				return {type: 'null'};

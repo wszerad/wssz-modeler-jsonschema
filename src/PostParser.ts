@@ -1,7 +1,8 @@
 import { Formats } from "@wssz/modeler";
+import { JSONProp } from './schema';
 
 export class PostParser {
-	static parse(schema: object) {
+	static parse(schema: JSONProp) {
 		if ('$ref' in schema && schema['$ref'] === 'Date') {
 			delete schema['$ref'];
 			Object.assign(schema, {
