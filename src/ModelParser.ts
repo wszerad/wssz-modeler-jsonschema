@@ -1,5 +1,4 @@
 import {
-	ArrayItems,
 	Description,
 	Example,
 	Examples,
@@ -22,6 +21,10 @@ import { PostParser } from './PostParser';
 import { PropParsers } from './PropParser';
 import { JSONProp, JSONSchema } from './schema';
 
+export interface ModelerJsonSchemaOptions {
+	openApiV3?: boolean
+}
+
 export class ModelParser {
 	private dependencies = new Set<Function>();
 	private schema: JSONSchema = {
@@ -29,10 +32,10 @@ export class ModelParser {
 		properties: {}
 	};
 
-	constructor(model: Object) {
+	constructor(model: Object, options: ModelerJsonSchemaOptions) {
 		getMarkers(model).forEach((markers, key) => {
 			const definition: JSONProp = {};
-			const prop = new PropParsers(model, markers, key as string);
+			const prop = new PropParsers(model, markers, key as string, options);
 
 			Object.assign(
 				definition,
@@ -65,8 +68,8 @@ export class ModelParser {
 				prop.extractor('format', Format),
 			);
 
-			PostParser.parse(selfProp);
-			PostParser.parse(definition);
+			PostParser.parse(selfProp, options);
+			PostParser.parse(definition, options);
 			this.schema.properties[key as string] = definition;
 			prop.getDependencies().forEach(dependence => this.dependencies.add(dependence));
 		});

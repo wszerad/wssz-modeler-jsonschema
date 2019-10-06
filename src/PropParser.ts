@@ -1,5 +1,5 @@
 import { Default, Enum, extractDecoratorMarkers, hasMarkers, Items, NestedItems, Pattern, Prop } from '@wssz/modeler';
-import { ModelParser } from './ModelParser';
+import { ModelerJsonSchemaOptions, ModelParser } from './ModelParser';
 
 export class PropParsers {
 	private dependencies = new Set<Function>();
@@ -7,7 +7,8 @@ export class PropParsers {
 	constructor(
 		private modelClass: Object,
 		private keyMarkers: Map<Function, any>,
-		private key: string
+		private key: string,
+		private options: ModelerJsonSchemaOptions
 	) {
 	}
 
@@ -77,7 +78,7 @@ export class PropParsers {
 		let nested;
 
 		if (nestedItems && nestedItems.length) {
-			const model: ModelParser = new ModelParser(items);
+			const model: ModelParser = new ModelParser(items, this.options);
 			// @ts-ignore
 			nested = model.getSchema().properties.items;
 			model.getDependencies().forEach(dep => this.dependencies.add(dep));

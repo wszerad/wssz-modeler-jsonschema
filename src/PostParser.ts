@@ -1,8 +1,9 @@
 import { Formats } from "@wssz/modeler";
+import { ModelerJsonSchemaOptions } from './ModelParser';
 import { JSONProp } from './schema';
 
 export class PostParser {
-	static parse(schema: JSONProp) {
+	static parse(schema: JSONProp, options: ModelerJsonSchemaOptions) {
 		if ('$ref' in schema && schema['$ref'] === 'Date') {
 			delete schema['$ref'];
 			Object.assign(schema, {
@@ -12,8 +13,13 @@ export class PostParser {
 		}
 
 		if ('$ref' in schema && 'nullable' in schema) {
-			const ref = schema['$ref'];
 			delete schema['nullable'];
+
+			if (!options.openApiV3) {
+				return;
+			}
+
+			const ref = schema['$ref'];
 			delete schema['$ref'];
 			Object.assign(schema, {
 				oneOf: [
