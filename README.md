@@ -1,6 +1,19 @@
 # @wssz/modeler-jsonschema
 Plugin for [@wssz/modeler](https://github.com/wszerad/wssz-modeler), create JSONSchema from decorated object.
 
+## ModelerJsonSchema
+
+* ModelerJsonSchema.create(model, options)
+    * model decorated class
+    * options
+    ``
+     {
+        useNullable: boolean
+        // use nullable instead of oneOf: [{type: 'null'}, ...]
+        // for OpenAPI < 3 compatibility
+     }
+    ``
+
 ## Usage
 
 ```ts

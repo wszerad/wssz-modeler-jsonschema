@@ -13,12 +13,11 @@ export class PostParser {
 		}
 
 		if ('$ref' in schema && 'nullable' in schema) {
-			delete schema['nullable'];
-
-			if (!options.openApiV3) {
+			if (options.useNullable) {
 				return;
 			}
 
+			delete schema['nullable'];
 			const ref = schema['$ref'];
 			delete schema['$ref'];
 			Object.assign(schema, {

@@ -22,7 +22,7 @@ import { PropParsers } from './PropParser';
 import { JSONProp, JSONSchema } from './schema';
 
 export interface ModelerJsonSchemaOptions {
-	openApiV3?: boolean
+	useNullable?: boolean
 }
 
 export class ModelParser {
