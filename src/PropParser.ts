@@ -118,7 +118,7 @@ export class PropParsers {
 						$ref: `#/definitions/${type.name}`
 					};
 				}
-				return {type: 'null'};
+				return {};
 		}
 	}
 }
