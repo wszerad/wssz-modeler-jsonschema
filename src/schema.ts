@@ -7,4 +7,5 @@ export interface JSONProp {
 export interface JSONSchema {
 	type: string,
 	properties: {[key: string]: JSONProp}
+	required: string[]
 }

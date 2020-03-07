@@ -1,4 +1,14 @@
-import { Default, Enum, extractDecoratorMarkers, hasMarkers, Items, NestedItems, Pattern, Prop } from '@wssz/modeler';
+import {
+	Default,
+	Enum,
+	extractDecoratorMarkers,
+	hasMarkers,
+	Items,
+	NestedItems,
+	Pattern,
+	Prop,
+	Required
+} from '@wssz/modeler';
 import { ModelerJsonSchemaOptions, ModelParser } from './ModelParser';
 
 export class PropParsers {
@@ -23,6 +33,15 @@ export class PropParsers {
 		}
 
 		return {[jsonKey]: marker};
+	}
+
+	requiredExtractor(required: string[]) {
+		const marker = this.extractKeyMarkers(Required);
+		if (!marker) {
+			return required;
+		}
+
+		return [...required, this.key];
 	}
 
 	patternExtractor() {

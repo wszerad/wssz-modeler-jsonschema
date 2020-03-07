@@ -91,6 +91,7 @@ describe('tests', () => {
 			expect(results.getDependencies()).to.eql([OtherClass]);
 			expect(results.getSchema()).to.eql({
 				type: 'object',
+				required: ['ref'],
 				properties: {
 					arr2D: {
 						maxItems: 2,
@@ -127,7 +128,6 @@ describe('tests', () => {
 					ref: {
 						description: 'description',
 						$ref: '#/definitions/OtherClass',
-						required: true,
 						examples: {
 							a: {value: {name: 'a'}},
 							b: {value: {name: 'b'}}

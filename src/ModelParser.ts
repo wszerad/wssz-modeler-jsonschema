@@ -29,13 +29,18 @@ export class ModelParser {
 	private dependencies = new Set<Function>();
 	private schema: JSONSchema = {
 		type: 'object',
-		properties: {}
+		properties: {},
+		required: []
 	};
 
 	constructor(model: Object, options: ModelerJsonSchemaOptions) {
+		let required: string[] = [];
+
 		getMarkers(model).forEach((markers, key) => {
 			const definition: JSONProp = {};
 			const prop = new PropParsers(model, markers, key as string, options);
+
+			required = prop.requiredExtractor(required);
 
 			Object.assign(
 				definition,
@@ -45,7 +50,6 @@ export class ModelParser {
 				prop.extractor('description', Description),
 				prop.extractor('example', Example),
 				prop.extractor('examples', Examples),
-				prop.extractor('required', Required),
 				prop.extractor('maxItems', MaxItems),
 				prop.extractor('minItems', MinItems),
 				prop.extractor('uniqueItems', UniqueItems),
@@ -73,6 +77,8 @@ export class ModelParser {
 			this.schema.properties[key as string] = definition;
 			prop.getDependencies().forEach(dependence => this.dependencies.add(dependence));
 		});
+
+		this.schema.required = required;
 	}
 
 	getSchema() {
