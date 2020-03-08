@@ -138,7 +138,7 @@ describe('tests', () => {
 						maxLength: 6,
 						minLength: 3,
 						format: 'email',
-						pattern: '/[test|test2]/',
+						pattern: '[test|test2]',
 						enum: ['test', 'test2'],
 						example: 'test'
 					}

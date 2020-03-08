@@ -50,7 +50,7 @@ export class PropParsers {
 			return {};
 		}
 
-		return {pattern: marker.toString()};
+		return {pattern: marker.source};
 	}
 
 	defaultExtractor() {
